@@ -1,13 +1,114 @@
-<!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
+<script lang="ts">
+	import Button from "$lib/Components/Button.svelte";
 
-<div class="container h-full mx-auto flex justify-center items-center">
-	<div class="space-y-5">
-		<h1 class="h1">Let's get cracking bones!</h1>
-		<p>Start by exploring:</p>
-		<ul>
-			<li><code class="code">/src/routes/+layout.svelte</code> - barebones layout, the CSS import order is critical!</li>
-			<li><code class="code">/src/app.postcss</code> - minimal css to make the page full screen, may not be relevant for your project</li>
-			<li><code class="code">/src/routes/+page.svelte</code> - this page, you can replace the contents</li>
-		</ul>
-	</div>
-</div>
+	import { supabase } from "$lib/supabase";
+	import type { todos } from "$lib/types";
+
+	const dsComp = {
+		todos: <todos[] | null > [],
+		loader: false,
+		addValue: "",
+		showUpdate: false,
+		comparison: 0.1,
+		deleteLoader: false,
+
+		updateValue: "",
+	}
+
+	const resursiveCall = async () =>
+	{
+		try {
+			const { data } = await supabase.from("todos").select("*");
+			dsComp.todos = data;
+		} catch (error) {
+			console.log(error);
+		}
+	}
+	resursiveCall();
+
+	const addHandler = async () =>
+	{	
+		dsComp.loader = true;
+		try {
+			const { data } = await supabase.from("todos").upsert({activity: dsComp.addValue}).select();
+			resursiveCall();
+			dsComp.loader = false;
+			dsComp.addValue = "";
+		} catch (error) {
+			console.log(error);
+			dsComp.loader = false;
+			dsComp.addValue = "";
+		}
+	}
+
+	const deleteHandler = async (todoValue: todos) =>
+	{
+		try {
+			const {error} = await supabase.from("todos").delete().eq("activity", todoValue.activity);
+			resursiveCall();
+		} catch (error) {
+			console.log(error);
+
+		}
+		
+	}
+
+	const updateHandler = async (todoValue: todos) =>
+	{
+		try {
+			const { data, error } = await supabase.from("todos").update({activity: dsComp.updateValue}).eq("activity", todoValue.activity);
+			resursiveCall();
+			dsComp.comparison = 0.1;
+			dsComp.updateValue = "";
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+</script>
+
+<main class="sm:max-w-2xl mx-auto p-5 sm:p-0 flex flex-col gap-2">
+	<h1 class="h2 text-center">Fullstack Todo App</h1>
+	<section class="flex flex-col gap-2">
+		<input type="text" placeholder="Enter data to send in database" class="input w-full" 
+		bind:value={dsComp.addValue}/>
+
+		<div class="max-w-fit">
+			<Button title="Add data" 
+			on:click={addHandler} 
+			loader={dsComp.loader} 
+			loader_title="Relax"
+		/>
+
+		</div>
+	</section>
+	{#if dsComp.todos === null}
+		<p>There is something wrong!!</p>
+	{:else}
+		{#each dsComp.todos as todo, index}
+			<div class="card p-2">
+				<section class="flex">
+					<div class="w-full"></div>
+					<div class="flex gap-2">
+						<Button color="bg-green-500" title="ShowUpdate" on:click={() => dsComp.comparison = index}/>
+						<Button color="bg-red-500" title="Delete" loader={dsComp.deleteLoader} loader_title="Deleting" on:click={() => deleteHandler(todo)}/>
+						{#if dsComp.comparison === index}
+							<div class="card p-2 flex flex-col gap-2 absolute mt-10">
+								<textarea class="textarea w-full p-2" bind:value={dsComp.updateValue}/>
+								<section class="flex">
+									<div class="flex gap-2">
+										<Button color="bg-green-500" title="Update" on:click={() => updateHandler(todo)}/>
+										<Button color="bg-red-500" title="Cancel" on:click={() => dsComp.comparison = 0.1}/>
+									</div>
+									<div class="w-full"></div>
+								</section>
+							</div>
+						{/if}
+					</div>
+				</section>
+				<p>{todo.activity}</p>
+			</div>
+		{/each}
+	{/if}
+	
+</main>
