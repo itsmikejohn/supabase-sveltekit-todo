@@ -1,5 +1,5 @@
-export type todos = [
-    {
-        activity: string
-    }
-]
+export type TodoValue = {
+    activity: any
+    date: string
+    id: number
+}

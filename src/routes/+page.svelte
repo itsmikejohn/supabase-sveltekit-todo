@@ -1,11 +1,13 @@
 <script lang="ts">
 	import Button from "$lib/Components/Button.svelte";
+	import DeleteHandler from "$lib/Components/DeleteHandler.svelte";
+	import { slide } from "svelte/transition";
 
 	import { supabase } from "$lib/supabase";
-	import type { todos } from "$lib/types";
+	import type { TodoValue } from "$lib/types";
 
 	const dsComp = {
-		todos: <todos[] | null > [],
+		todos: <any[] | null> [],
 		loader: false,
 		addValue: "",
 		showUpdate: false,
@@ -41,7 +43,7 @@
 		}
 	}
 
-	const deleteHandler = async (todoValue: todos) =>
+	const deleteHandler = async (todoValue: TodoValue) =>
 	{
 		try {
 			const {error} = await supabase.from("todos").delete().eq("activity", todoValue.activity);
@@ -53,7 +55,7 @@
 		
 	}
 
-	const updateHandler = async (todoValue: todos) =>
+	const updateHandler = async (todoValue: TodoValue) =>
 	{
 		try {
 			const { data, error } = await supabase.from("todos").update({activity: dsComp.updateValue}).eq("activity", todoValue.activity);
@@ -68,7 +70,7 @@
 </script>
 
 <main class="sm:max-w-2xl mx-auto p-5 sm:p-0 flex flex-col gap-2">
-	<h1 class="h2 text-center">Fullstack Todo App</h1>
+	<h1 class="h2 text-center">Mikey Fullstack Todo App</h1>
 	<section class="flex flex-col gap-2">
 		<input type="text" placeholder="Enter data to send in database" class="input w-full" 
 		bind:value={dsComp.addValue}/>
@@ -86,12 +88,13 @@
 		<p>There is something wrong!!</p>
 	{:else}
 		{#each dsComp.todos as todo, index}
-			<div class="card p-2">
+			<div class="card p-2" in:slide>
+				<p class="text-red-500">{new Date(todo.created_at).toLocaleDateString() + ", " + new Date(todo.created_at).toLocaleTimeString() }</p>
 				<section class="flex">
 					<div class="w-full"></div>
 					<div class="flex gap-2">
 						<Button color="bg-green-500" title="ShowUpdate" on:click={() => dsComp.comparison = index}/>
-						<Button color="bg-red-500" title="Delete" loader={dsComp.deleteLoader} loader_title="Deleting" on:click={() => deleteHandler(todo)}/>
+						<DeleteHandler {todo} {resursiveCall}/>
 						{#if dsComp.comparison === index}
 							<div class="card p-2 flex flex-col gap-2 absolute mt-10">
 								<textarea class="textarea w-full p-2" bind:value={dsComp.updateValue}/>
