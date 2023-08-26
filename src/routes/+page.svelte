@@ -70,7 +70,15 @@
 </script>
 
 <main class="sm:max-w-2xl mx-auto p-5 sm:p-0 flex flex-col gap-2">
+
 	<h1 class="h2 text-center">Mikey Fullstack Todo App</h1>
+	<p>This project is uploaded by:</p>
+	<button class="max-w-fit text-left text-blue-600 transition-all hover:underline active:scale-95"
+	on:click={() => window.open("https://www.youtube.com/@MikeSharesCode")}
+	>https://www.youtube.com/@MikeSharesCode</button>
+	<button class="max-w-fit text-left text-blue-600 transition-all hover:underline active:scale-95"
+	on:click={() => window.open("https://www.youtube.com/watch?v=3NlOJnm19X8")}
+	>https://www.youtube.com/watch?v=3NlOJnm19X8</button>
 	<section class="flex flex-col gap-2">
 		<input type="text" placeholder="Enter data to send in database" class="input w-full" 
 		bind:value={dsComp.addValue}/>
