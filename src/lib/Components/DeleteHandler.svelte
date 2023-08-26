@@ -6,7 +6,6 @@
     import type { TodoValue } from "$lib/types";
 
     export let todo: TodoValue;
-    export let resursiveCall: any;
 
     const dsComp = {
         loader: false,
@@ -19,7 +18,6 @@
         try {
 			const {error} = await supabase.from("todos").delete().eq("activity", todo.activity).eq("id", todo.id);
             dsComp.loader = false;
-			resursiveCall();
 		} catch (error) {
 			console.log(error);
             dsComp.loader = false;
