@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { staticState } from "$lib/stores";
 	import Button from "$lib/Components/Button.svelte";
 	import DeleteHandler from "$lib/Components/DeleteHandler.svelte";
-	import { slide } from "svelte/transition";
+	import { slide, fly } from "svelte/transition";
 
 	import { supabase } from "$lib/supabase";
 	import type { TodoValue } from "$lib/types";
+
+	import { LightSwitch } from '@skeletonlabs/skeleton';
 
 	const dsComp = {
 		todos: <any[] | null> [],
@@ -13,14 +16,13 @@
 		showUpdate: false,
 		comparison: 0.1,
 		deleteLoader: false,
-
 		updateValue: "",
 	}
 
 	const resursiveCall = async () =>
 	{
 		try {
-			const { data } = await supabase.from("todos").select("*");
+			const { data } = await supabase.from("todos").select("*").order("created_at", {ascending: false});
 			dsComp.todos = data;
 		} catch (error) {
 			console.log(error);
@@ -43,18 +45,6 @@
 		}
 	}
 
-	const deleteHandler = async (todoValue: TodoValue) =>
-	{
-		try {
-			const {error} = await supabase.from("todos").delete().eq("activity", todoValue.activity);
-			resursiveCall();
-		} catch (error) {
-			console.log(error);
-
-		}
-		
-	}
-
 	const updateHandler = async (todoValue: TodoValue) =>
 	{
 		try {
@@ -69,9 +59,10 @@
 
 </script>
 
-<main class="sm:max-w-2xl mx-auto p-5 sm:p-0 flex flex-col gap-2">
+<main class="sm:max-w-2xl mx-auto p-5 sm:p-0 flex flex-col gap-2" in:fly={{x: 100, duration: 600}}>
 
 	<h1 class="h2 text-center">Mikey Fullstack Todo App</h1>
+	<LightSwitch />
 	<p>This project is uploaded by:</p>
 	<button class="max-w-fit text-left text-blue-600 transition-all hover:underline active:scale-95"
 	on:click={() => window.open("https://www.youtube.com/@MikeSharesCode")}
@@ -96,7 +87,7 @@
 		<p>There is something wrong!!</p>
 	{:else}
 		{#each dsComp.todos as todo, index}
-			<div class="card p-2" in:slide>
+			<div class="card p-2" class:deleteStyle={$staticState.deleteCompare === todo.id}>
 				<p class="text-red-500">{new Date(todo.created_at).toLocaleDateString() + ", " + new Date(todo.created_at).toLocaleTimeString() }</p>
 				<section class="flex">
 					<div class="w-full"></div>
@@ -123,3 +114,9 @@
 	{/if}
 	
 </main>
+
+<style>
+	.deleteStyle{
+		background-color: rgba(255, 0, 0, 0.319);
+	}
+</style>

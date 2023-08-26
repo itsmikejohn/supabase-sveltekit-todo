@@ -1,6 +1,7 @@
 <script lang="ts">
     import { supabase } from "$lib/supabase";
 
+    import { staticState } from "$lib/stores";
 	import Button from "./Button.svelte";
     import type { TodoValue } from "$lib/types";
 
@@ -14,6 +15,7 @@
     const deleteHandler = async () =>
     {
         dsComp.loader = true;
+        $staticState.deleteCompare = todo.id;
         try {
 			const {error} = await supabase.from("todos").delete().eq("activity", todo.activity).eq("id", todo.id);
             dsComp.loader = false;
@@ -23,7 +25,6 @@
             dsComp.loader = false;
 		}
     }
-
 
 </script>
 
